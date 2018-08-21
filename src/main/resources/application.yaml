@@ -1,0 +1,16 @@
+spring:
+  application:
+     name: game-service
+  data:
+    mongodb:
+      host: 192.168.254.129
+      port: 27017
+      database: simplecasino-game-service
+
+server:
+  port: 8762
+
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka
