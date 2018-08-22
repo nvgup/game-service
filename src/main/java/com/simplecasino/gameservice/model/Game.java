@@ -1,8 +1,6 @@
 package com.simplecasino.gameservice.model;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -10,9 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "games")
-@CompoundIndexes({
-        @CompoundIndex(name = "bet_playerid", def = "{ 'playerBets.playerId': 1 }")
-})
 public class Game {
 
     @Id

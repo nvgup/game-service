@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface GameDao extends MongoRepository<Game, Long> {
 
-    @Query(value = "{'playerBets.playerId' : ?0 }", fields = "{ 'playerBets.playerId' : 0 }")
+    @Query(value = "{'playerBets.playerId' : ?0 }")
     List<Game> findByPlayerId(Long playerId);
 }

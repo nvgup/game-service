@@ -46,6 +46,7 @@ public class GameServiceImpl implements GameService {
                 .map(game -> new BetResponse(
                         game.getId(),
                         game.getPlayerBets().stream()
+                                .filter(playerBet -> playerId.equals(playerBet.getPlayerId()))
                                 .map(PlayerBet::getAmount)
                                 .collect(Collectors.toList())
                 )).collect(Collectors.toList());

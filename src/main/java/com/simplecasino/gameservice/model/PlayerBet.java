@@ -4,19 +4,19 @@ import java.math.BigDecimal;
 
 public class PlayerBet {
 
-    private long playerId;
+    private Long playerId;
     private BigDecimal amount;
 
-    public PlayerBet(long playerId, BigDecimal amount) {
+    public PlayerBet(Long playerId, BigDecimal amount) {
         this.playerId = playerId;
         this.amount = amount;
     }
 
-    public long getPlayerId() {
+    public Long getPlayerId() {
         return playerId;
     }
 
-    private void setPlayerId(long playerId) {
+    private void setPlayerId(Long playerId) {
         this.playerId = playerId;
     }
 
