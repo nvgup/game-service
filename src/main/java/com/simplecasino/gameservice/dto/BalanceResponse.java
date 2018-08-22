@@ -3,7 +3,6 @@ package com.simplecasino.gameservice.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 public class BalanceResponse {
 

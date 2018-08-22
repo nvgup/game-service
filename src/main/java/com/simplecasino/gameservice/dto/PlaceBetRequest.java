@@ -1,10 +1,13 @@
 package com.simplecasino.gameservice.dto;
 
+import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 
 public class PlaceBetRequest {
 
     private Long playerId;
+
+    @Min(0)
     private BigDecimal amount;
 
     public Long getPlayerId() {

@@ -5,8 +5,7 @@ import com.simplecasino.gameservice.dto.BalanceResponse;
 import com.simplecasino.gameservice.dto.BetResponse;
 import com.simplecasino.gameservice.dto.PlaceBetRequest;
 import com.simplecasino.gameservice.dto.UpdateBalanceRequest;
-import com.simplecasino.gameservice.exception.GameAlreadyExistException;
-import com.simplecasino.gameservice.exception.ResourceNotFoundException;
+import com.simplecasino.gameservice.exception.RestApiException;
 import com.simplecasino.gameservice.model.Game;
 import com.simplecasino.gameservice.model.PlayerBet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,22 +28,27 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void saveGame(Game game) {
-        Long gameId = game.getId();
-        if (gameDao.existsById(gameId)) {
-            throw new GameAlreadyExistException(String.format("Game with id '%s' already exist", gameId));
-        }
-
+        throwExceptionIfGameExists(game.getId());
         gameDao.save(game);
+    }
+
+    private void throwExceptionIfGameExists(Long gameId) {
+        if (gameDao.existsById(gameId)) {
+            throw new RestApiException(RestApiException.Type.GAME_ALREADY_EXIST);
+        }
     }
 
     @Override
     public List<BetResponse> getPlayerBets(Long playerId) {
         List<Game> games = gameDao.findByPlayerId(playerId);
+
         return games.stream()
-                .map(game -> new BetResponse(game.getId(), game.getPlayerBets().stream()
-                        .map(PlayerBet::getAmount)
-                        .collect(Collectors.toList())))
-                .collect(Collectors.toList());
+                .map(game -> new BetResponse(
+                        game.getId(),
+                        game.getPlayerBets().stream()
+                                .map(PlayerBet::getAmount)
+                                .collect(Collectors.toList())
+                )).collect(Collectors.toList());
     }
 
     @Override
@@ -53,14 +57,13 @@ public class GameServiceImpl implements GameService {
         updateBalanceRequest.setBalance(placeBetRequest.getAmount().negate());
 
         BalanceResponse balanceResponse = walletService.updateBalance(placeBetRequest.getPlayerId(), updateBalanceRequest);
-        if (balanceResponse.getError() == null) {
-            Game game = gameDao.findById(gameId)
-                    .orElseThrow(() -> new ResourceNotFoundException(String.format("Game with id '%s' wan not found", gameId)));
+        Game game = gameDao.findById(gameId)
+                .orElseThrow(() -> new RestApiException(RestApiException.Type.GAME_NOT_FOUND));
 
-            PlayerBet playerBet = new PlayerBet(placeBetRequest.getPlayerId(), placeBetRequest.getAmount());
-            game.addPlayerBet(playerBet);
-            gameDao.save(game);
-        }
+        PlayerBet playerBet = new PlayerBet(placeBetRequest.getPlayerId(), placeBetRequest.getAmount());
+        game.addPlayerBet(playerBet);
+
+        gameDao.save(game);
 
         return balanceResponse;
     }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -29,7 +30,7 @@ public class GameServiceController {
     }
 
     @PostMapping("/game/{id}/bet")
-    public BalanceResponse placeBet(@PathVariable Long id, @RequestBody PlaceBetRequest placeBetRequest) {
+    public BalanceResponse placeBet(@PathVariable Long id, @RequestBody @Valid PlaceBetRequest placeBetRequest) {
         return gameService.placeBet(id, placeBetRequest);
     }
 
