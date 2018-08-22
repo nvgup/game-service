@@ -11,7 +11,7 @@ import java.util.List;
 
 @Document(collection = "games")
 @CompoundIndexes({
-        @CompoundIndex(name = "bet_playerid", def = "{ 'playerBets.playerId': 1 }", unique = true)
+        @CompoundIndex(name = "bet_playerid", def = "{ 'playerBets.playerId': 1 }")
 })
 public class Game {
 

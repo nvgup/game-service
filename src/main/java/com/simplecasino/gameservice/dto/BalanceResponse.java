@@ -12,6 +12,9 @@ public class BalanceResponse {
 
     private BigDecimal balance;
 
+    private BalanceResponse() {
+    }
+
     public BalanceResponse(String error, BigDecimal balance) {
         this(balance);
         this.error = error;
@@ -21,8 +24,8 @@ public class BalanceResponse {
         this.balance = balance;
     }
 
-    public Optional<String> getError() {
-        return Optional.ofNullable(error);
+    public String getError() {
+        return error;
     }
 
     public void setError(String error) {

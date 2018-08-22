@@ -33,8 +33,8 @@ public class GameServiceController {
         return gameService.placeBet(id, placeBetRequest);
     }
 
-    @GetMapping("/games/player{id}/bet")
-    public List<BetResponse> placeBet(@PathVariable Long id) {
+    @GetMapping("/games/player/{id}/bets")
+    public List<BetResponse> getBets(@PathVariable Long id) {
         return gameService.getPlayerBets(id);
     }
 

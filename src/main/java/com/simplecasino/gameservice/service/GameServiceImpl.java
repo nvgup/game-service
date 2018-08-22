@@ -5,12 +5,12 @@ import com.simplecasino.gameservice.dto.BalanceResponse;
 import com.simplecasino.gameservice.dto.BetResponse;
 import com.simplecasino.gameservice.dto.PlaceBetRequest;
 import com.simplecasino.gameservice.dto.UpdateBalanceRequest;
+import com.simplecasino.gameservice.exception.GameAlreadyExistException;
 import com.simplecasino.gameservice.exception.ResourceNotFoundException;
 import com.simplecasino.gameservice.model.Game;
 import com.simplecasino.gameservice.model.PlayerBet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,13 +27,16 @@ public class GameServiceImpl implements GameService {
         this.walletService = walletService;
     }
 
-    @Transactional
     @Override
     public void saveGame(Game game) {
+        Long gameId = game.getId();
+        if (gameDao.existsById(gameId)) {
+            throw new GameAlreadyExistException(String.format("Game with id '%s' already exist", gameId));
+        }
+
         gameDao.save(game);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<BetResponse> getPlayerBets(Long playerId) {
         List<Game> games = gameDao.findByPlayerId(playerId);
@@ -44,14 +47,13 @@ public class GameServiceImpl implements GameService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     @Override
     public BalanceResponse placeBet(Long gameId, PlaceBetRequest placeBetRequest) {
         UpdateBalanceRequest updateBalanceRequest = new UpdateBalanceRequest();
         updateBalanceRequest.setBalance(placeBetRequest.getAmount().negate());
 
         BalanceResponse balanceResponse = walletService.updateBalance(placeBetRequest.getPlayerId(), updateBalanceRequest);
-        if (!balanceResponse.getError().isPresent()) {
+        if (balanceResponse.getError() == null) {
             Game game = gameDao.findById(gameId)
                     .orElseThrow(() -> new ResourceNotFoundException(String.format("Game with id '%s' wan not found", gameId)));
 
