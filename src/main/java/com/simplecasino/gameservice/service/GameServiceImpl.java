@@ -57,9 +57,10 @@ public class GameServiceImpl implements GameService {
         UpdateBalanceRequest updateBalanceRequest = new UpdateBalanceRequest();
         updateBalanceRequest.setBalance(placeBetRequest.getAmount().negate());
 
-        BalanceResponse balanceResponse = walletService.updateBalance(placeBetRequest.getPlayerId(), updateBalanceRequest);
         Game game = gameDao.findById(gameId)
                 .orElseThrow(() -> new RestApiException(RestApiException.Type.GAME_NOT_FOUND));
+
+        BalanceResponse balanceResponse = walletService.updateBalance(placeBetRequest.getPlayerId(), updateBalanceRequest);
 
         PlayerBet playerBet = new PlayerBet(placeBetRequest.getPlayerId(), placeBetRequest.getAmount());
         game.addPlayerBet(playerBet);
