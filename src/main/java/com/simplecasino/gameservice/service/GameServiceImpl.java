@@ -27,9 +27,9 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void saveGame(Game game) {
+    public Game saveGame(Game game) {
         throwExceptionIfGameExists(game.getId());
-        gameDao.save(game);
+        return gameDao.save(game);
     }
 
     private void throwExceptionIfGameExists(Long gameId) {
@@ -54,11 +54,11 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public BalanceResponse placeBet(Long gameId, PlaceBetRequest placeBetRequest) {
-        UpdateBalanceRequest updateBalanceRequest = new UpdateBalanceRequest();
-        updateBalanceRequest.setBalance(placeBetRequest.getAmount().negate());
-
         Game game = gameDao.findById(gameId)
                 .orElseThrow(() -> new RestApiException(RestApiException.Type.GAME_NOT_FOUND));
+
+        UpdateBalanceRequest updateBalanceRequest = new UpdateBalanceRequest();
+        updateBalanceRequest.setBalance(placeBetRequest.getAmount().negate());
 
         BalanceResponse balanceResponse = walletService.updateBalance(placeBetRequest.getPlayerId(), updateBalanceRequest);
 

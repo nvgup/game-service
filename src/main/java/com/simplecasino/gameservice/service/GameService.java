@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface GameService {
 
-    void saveGame(Game game);
+    Game saveGame(Game game);
 
     List<BetResponse> getPlayerBets(Long playerId);
 

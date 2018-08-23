@@ -1,0 +1,13 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27016
+      database: simplecasino-game-service-test
+
+server:
+  port: 2222
+
+eureka:
+  client:
+    enabled: false

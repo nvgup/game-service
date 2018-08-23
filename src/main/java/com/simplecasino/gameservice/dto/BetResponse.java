@@ -9,6 +9,10 @@ public class BetResponse {
 
     private List<BigDecimal> bets;
 
+    private BetResponse() {
+
+    }
+
     public BetResponse(Long gameId, List<BigDecimal> bets) {
         this.gameId = gameId;
         this.bets = bets;
