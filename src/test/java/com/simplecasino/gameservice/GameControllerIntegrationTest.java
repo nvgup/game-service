@@ -9,23 +9,19 @@ import com.simplecasino.gameservice.dto.PlaceBetRequest;
 import com.simplecasino.gameservice.exception.RestApiException;
 import com.simplecasino.gameservice.model.Game;
 import com.simplecasino.gameservice.model.PlayerBet;
-import com.simplecasino.gameservice.service.WalletServiceProxy;
-import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRunner;
+import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -49,8 +45,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         classes = GameServiceApplication.class)
 @AutoConfigureMockMvc
-@TestPropertySource(locations = "classpath:test.yaml")
-@AutoConfigureStubRunner(ids = {"wallet-servicestubs:3333"})
+@AutoConfigureStubRunner(
+        ids = {"com.simplecasino:wallet-service:+:stubs:8763"},
+        stubsMode = StubRunnerProperties.StubsMode.LOCAL)
 public class GameControllerIntegrationTest {
 
     private static final Long TEST_ID = 1L;
@@ -63,14 +60,6 @@ public class GameControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private WebApplicationContext context;
-
-    @Before
-    public void setup() {
-        RestAssuredMockMvc.webAppContextSetup(context);
-    }
 
     @Test
     public void addGame_ifIdNotExist_thenReturnHttpStatus200() throws Exception {
@@ -114,21 +103,21 @@ public class GameControllerIntegrationTest {
 
     @Test
     public void getPlayerBets_IfPresentGamesWithThisPlayer_thenReturnHttpStatus200AndCorrectBetResponse() throws Exception {
-        PlayerBet playerBet1 = new PlayerBet(2L, BigDecimal.TEN);
-        PlayerBet playerBet2 = new PlayerBet(2L, BigDecimal.ONE);
+        PlayerBet playerBet1 = new PlayerBet(getId(), BigDecimal.TEN);
+        PlayerBet playerBet2 = new PlayerBet(getId(), BigDecimal.ONE);
         PlayerBet playerBet3 = new PlayerBet(TEST_ID, BigDecimal.ZERO);
         PlayerBet playerBet4 = new PlayerBet(TEST_ID, BigDecimal.TEN);
 
-        Game game1 = new Game(TEST_ID);
+        Game game1 = new Game(getId());
         game1.setPlayerBets(Arrays.asList(playerBet1, playerBet2, playerBet3));
 
-        Game game2 = new Game(2L);
+        Game game2 = new Game(getId());
         game2.setPlayerBets(Arrays.asList(playerBet2, playerBet3, playerBet3, playerBet4));
 
-        Game game3 = new Game(3L);
+        Game game3 = new Game(getId());
         game3.setPlayerBets(Arrays.asList(playerBet1, playerBet2));
 
-        Game game4 = new Game(4L);
+        Game game4 = new Game(getId());
 
         gameDao.saveAll(Arrays.asList(game1, game2, game3, game4));
 
@@ -146,11 +135,11 @@ public class GameControllerIntegrationTest {
         assertEquals(2, response.size());
 
         BetResponse betResponse1 = response.get(0);
-        assertEquals(TEST_ID, betResponse1.getGameId());
+        assertEquals(game1.getId(), betResponse1.getGameId());
         assertThat(betResponse1.getBets(), contains(BigDecimal.ZERO));
 
         BetResponse betResponse2 = response.get(1);
-        assertEquals(2, betResponse2.getGameId().longValue());
+        assertEquals(game2.getId(), betResponse2.getGameId());
         assertThat(betResponse2.getBets(), contains(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN));
     }
 
@@ -185,7 +174,7 @@ public class GameControllerIntegrationTest {
     }
 
     @Test
-    public void placeBet_ifGameExist_thenReturnUpdatedBalance() throws Exception {
+    public void placeBet_ifGameExistAndPlayerExistAndEnoughBalance_thenReturnUpdatedBalance() throws Exception {
         gameDao.save(new Game(TEST_ID));
 
         PlaceBetRequest placeBetRequest = new PlaceBetRequest();
@@ -196,11 +185,9 @@ public class GameControllerIntegrationTest {
                 post(String.format("/game/%s/bet", TEST_ID))
                         .content(asJsonString(placeBetRequest))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(HttpStatus.NOT_FOUND.value()))
+                .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.status", is(HttpStatus.NOT_FOUND.value())))
-                .andExpect(jsonPath("$.message", is(RestApiException.Type.GAME_NOT_FOUND.getMessage())))
-                .andExpect(jsonPath("$.code", is(RestApiException.Type.GAME_NOT_FOUND.getCode())));
+                .andExpect(jsonPath("$.balance", is(9)));
     }
 
     @After
